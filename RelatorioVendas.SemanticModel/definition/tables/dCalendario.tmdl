@@ -1,0 +1,100 @@
+table dCalendario
+	dataCategory: Time
+	lineageTag: 302c8a94-eaba-4f64-bacf-d0878ddff783
+
+	column Data
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		isKey
+		lineageTag: bcc9f048-70f6-46ac-9592-b28dd4966d07
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 4571cde2-a648-4d79-a341-21c621ec297e
+		summarizeBy: none
+		sourceColumn: Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês Num'
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 004d55fa-e4d5-4bfd-ba40-82a727de9020
+		summarizeBy: none
+		sourceColumn: Mês Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês'
+		dataType: string
+		lineageTag: 2b22201a-5c56-4ffb-be8b-e7ba4ae3c2d9
+		summarizeBy: none
+		sortByColumn: 'Mês Num'
+		sourceColumn: Mês
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		dataType: string
+		lineageTag: 70d7ef9d-1e03-4c10-8bcc-2fc68f348c33
+		summarizeBy: none
+		sourceColumn: Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ano Trimestre'
+		dataType: string
+		lineageTag: b266fd34-abd5-4b37-a187-f3edb680167f
+		summarizeBy: none
+		sourceColumn: Ano Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ano Mês Num'
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 930d3e87-f6e2-4bbb-b5fa-701e156354df
+		summarizeBy: none
+		sourceColumn: Ano Mês Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês Ano'
+		dataType: string
+		lineageTag: 4d5fe95e-3b2f-4689-9b75-77dc22ddcb2c
+		summarizeBy: none
+		sortByColumn: 'Ano Mês Num'
+		sourceColumn: Mês Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dCalendario = m
+		mode: import
+		source =
+				let
+				    Fonte = financials,
+				    Inicio = Date.StartOfYear(List.Min(Fonte[Date])),
+				    Fim = Date.EndOfYear(List.Max(Fonte[Date])),
+				    ListaDatas = List.Dates(Inicio, Duration.Days(Fim - Inicio) + 1, #duration(1, 0, 0, 0)),
+				    Tabela = #table(type table [Data = date], List.Transform(ListaDatas, each {_})),
+				    NomesMeses = {"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"},
+				    Ano = Table.AddColumn(Tabela, "Ano", each Date.Year([Data]), Int64.Type),
+				    MesNum = Table.AddColumn(Ano, "Mês Num", each Date.Month([Data]), Int64.Type),
+				    Mes = Table.AddColumn(MesNum, "Mês", each NomesMeses{[Mês Num] - 1}, type text),
+				    Trimestre = Table.AddColumn(Mes, "Trimestre", each "T" & Text.From(Date.QuarterOfYear([Data])), type text),
+				    AnoTrimestre = Table.AddColumn(Trimestre, "Ano Trimestre", each Text.From([Ano]) & " " & [Trimestre], type text),
+				    AnoMesNum = Table.AddColumn(AnoTrimestre, "Ano Mês Num", each [Ano] * 100 + [Mês Num], Int64.Type),
+				    MesAno = Table.AddColumn(AnoMesNum, "Mês Ano", each [Mês] & "/" & Text.End(Text.From([Ano]), 2), type text)
+				in
+				    MesAno
+
+	annotation PBI_ResultType = Table

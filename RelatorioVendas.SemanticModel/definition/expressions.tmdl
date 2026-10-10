@@ -1,0 +1,4 @@
+expression CaminhoArquivo = "C:\Users\Lincoln\Documents\desafio-dio-relatorio-vendas-powerbi\dados\Financial Sample.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: f4517789-8e42-4e1d-a963-165acadac1ae
+
+	annotation PBI_ResultType = Text

@@ -1,0 +1,61 @@
+table Medidas
+	lineageTag: 969e73aa-0669-44a6-b39e-35b6d7d9b42a
+
+	measure 'Total Vendas' = SUM(financials[Sales])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Vendas
+		lineageTag: 6729e0ec-5149-46d5-a1a9-6f2b067f5019
+
+	measure 'Vendas Brutas' = SUM(financials[Gross Sales])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Vendas
+		lineageTag: 788fd5c4-56f1-4a25-ba38-e0e738cd9524
+
+	measure 'Total Descontos' = SUM(financials[Discounts])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Vendas
+		lineageTag: 51e49fc1-37da-4ebc-bc5d-93c711a30877
+
+	measure '% Desconto' = DIVIDE([Total Descontos], [Vendas Brutas])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Vendas
+		lineageTag: c6931785-9e88-48bf-8a63-e82ba09523b8
+
+	measure 'Unidades Vendidas' = SUM(financials[Units Sold])
+		formatString: #,0
+		displayFolder: Vendas
+		lineageTag: d8cda908-5a27-468c-9073-8ca6ae8064a5
+
+	measure 'Custo (COGS)' = SUM(financials[COGS])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Lucro
+		lineageTag: 6d48365e-4a05-44e3-875a-a2a22afb9237
+
+	measure 'Lucro Total' = SUM(financials[Profit])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Lucro
+		lineageTag: 9cf49730-fe2b-4068-be10-02bf91ccfaf1
+
+	measure 'Margem de Lucro' = DIVIDE([Lucro Total], [Total Vendas])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Lucro
+		lineageTag: a7b84ecd-a53d-4c09-88d9-c91c17ca064c
+
+	column Coluna
+		dataType: string
+		isHidden
+		lineageTag: cd601b5c-2d30-4d2d-b644-733e99a18ccb
+		summarizeBy: none
+		sourceColumn: Coluna
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Medidas = m
+		mode: import
+		source =
+				let
+				    Fonte = #table(type table [Coluna = text], {})
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table
